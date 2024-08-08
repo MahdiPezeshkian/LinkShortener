@@ -3,7 +3,7 @@ package repositories
 import (
 	"database/sql"
 
-	domain "github.com/MahdiPezeshkian/LinkShortener/internal/domain/link"
+	domain "github.com/MahdiPezeshkian/LinkShortener/internal/domain/Link"
 	_ "github.com/mattn/go-sqlite3"
 )
 
