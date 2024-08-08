@@ -1,7 +1,9 @@
-package entity
+package domain
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Link struct {
@@ -14,4 +16,17 @@ type Link struct {
 	ModifiedAt  time.Time `json:"modified_at"`
 	Expiration  time.Time `json:"expiration"`
 	Clicks      int       `json:"clicks"`
+}
+
+func NewLink(originalURL, shortURL string, expiration time.Time) *Link {
+	return &Link{
+		Id:          uuid.NewString(),
+		Isdeleted:   false,
+		IsVisibled:  true,
+		OriginalURL: originalURL,
+		ShortURL:    shortURL,
+		CreatedAt:   time.Now(),
+		Expiration:  expiration,
+		Clicks:      0,
+	}
 }

@@ -3,8 +3,7 @@ package repositories
 import (
 	"database/sql"
 
-	"github.com/MahdiPezeshkian/LinkShortener/internal/domain"
-	"github.com/MahdiPezeshkian/LinkShortener/internal/domain/entity"
+	domain "github.com/MahdiPezeshkian/LinkShortener/internal/domain/link"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -12,11 +11,11 @@ type sqliteLinkRepository struct {
 	db *sql.DB
 }
 
-func NewSQLiteLinkRepository(db *sql.DB) domain.LinkRepository {
+func SQLiteLinkRepository(db *sql.DB) domain.LinkRepository {
 	return &sqliteLinkRepository{db: db}
 }
 
-func (r *sqliteLinkRepository) Insert(link *entity.Link) error {
+func (r *sqliteLinkRepository) Insert(link *domain.Link) error {
 	_, err := r.db.Exec(`
         INSERT INTO links (id, is_deleted, is_visibled, original_url, short_url, created_at, modified_at, expiration, clicks)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -25,7 +24,7 @@ func (r *sqliteLinkRepository) Insert(link *entity.Link) error {
 	return err
 }
 
-func (r *sqliteLinkRepository) Update(link *entity.Link) error {
+func (r *sqliteLinkRepository) Update(link *domain.Link) error {
 	_, err := r.db.Exec(`
         UPDATE links SET 
             is_deleted = ?, 
@@ -41,13 +40,12 @@ func (r *sqliteLinkRepository) Update(link *entity.Link) error {
 	return err
 }
 
-// FindByID finds a link by its ID
-func (r *sqliteLinkRepository) FindByID(id string) (*entity.Link, error) {
+func (r *sqliteLinkRepository) FindByID(id string) (*domain.Link, error) {
 	row := r.db.QueryRow(`
         SELECT id, is_deleted, is_visibled, original_url, short_url, created_at, modified_at, expiration, clicks
         FROM links WHERE id = ?`, id)
 
-	link := &entity.Link{}
+	link := &domain.Link{}
 	err := row.Scan(
 		&link.Id, &link.Isdeleted, &link.IsVisibled, &link.OriginalURL, &link.ShortURL,
 		&link.CreatedAt, &link.ModifiedAt, &link.Expiration, &link.Clicks,
@@ -58,8 +56,7 @@ func (r *sqliteLinkRepository) FindByID(id string) (*entity.Link, error) {
 	return link, nil
 }
 
-// FindAll retrieves all links from the database
-func (r *sqliteLinkRepository) FindAll() ([]*entity.Link, error) {
+func (r *sqliteLinkRepository) FindAll() ([]*domain.Link, error) {
 	rows, err := r.db.Query(`
         SELECT id, is_deleted, is_visibled, original_url, short_url, created_at, modified_at, expiration, clicks
         FROM links`)
@@ -68,9 +65,9 @@ func (r *sqliteLinkRepository) FindAll() ([]*entity.Link, error) {
 	}
 	defer rows.Close()
 
-	var links []*entity.Link
+	var links []*domain.Link
 	for rows.Next() {
-		link := &entity.Link{}
+		link := &domain.Link{}
 		err := rows.Scan(
 			&link.Id, &link.Isdeleted, &link.IsVisibled, &link.OriginalURL, &link.ShortURL,
 			&link.CreatedAt, &link.ModifiedAt, &link.Expiration, &link.Clicks,
