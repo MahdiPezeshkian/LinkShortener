@@ -30,3 +30,7 @@ func NewLink(originalURL, shortURL string, expiration time.Time) *Link {
 		Clicks:      0,
 	}
 }
+
+func (l *Link) Click() {
+	l.Clicks++ 
+}
