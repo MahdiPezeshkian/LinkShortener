@@ -80,7 +80,6 @@ func (r *sqliteLinkRepository) FindAll() ([]*domain.Link, error) {
 	return links, nil
 }
 
-// Delete soft-deletes a link by marking it as deleted
 func (r *sqliteLinkRepository) Delete(id string) error {
 	_, err := r.db.Exec("UPDATE links SET is_deleted = ? WHERE id = ?", true, id)
 	return err
