@@ -6,6 +6,10 @@ func (u *LinkUsecase) GetLinkByID(id string) (*domain.LinkOutputDto, error) {
 
 	link, err := u.linkRepo.FindByID(id)
 
+	if err != nil {
+		return nil, err
+	}
+	
 	dto := domain.LinkOutputDto{
 		Id:          link.Id,
 		Isdeleted:   link.Isdeleted,
