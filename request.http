@@ -1,6 +1,6 @@
-@baseUrl = http://127.0.0.1:8080/
+@baseUrl = http://127.0.0.1:8080/api/
 
-POST {{baseUrl}}link HTTP/1.1
+POST {{baseUrl}}li HTTP/1.1
 Content-Type: application/json
 
 {
@@ -11,8 +11,8 @@ Content-Type: application/json
 
 ###
 
-GET {{baseUrl}}link/get?id=ff9da6b3-1b0b-432f-bb72-5761165a2e0d HTTP/1.1
+GET {{baseUrl}}li/get?id=54ec6516-2752-439f-a9ab-8345fae78283 HTTP/1.1
 
 ###
 
-GET {{baseUrl}}link/getpaged?page_number=0&page_size=3 HTTP/1.1
+GET {{baseUrl}}li/getpaged?page_number=0&page_size=3 HTTP/1.1

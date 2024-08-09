@@ -32,9 +32,9 @@ func main() {
 	linkUsecase := usecases.NewLinkUseCase(linkRepo)
 	linkEndpoints := endpoints.NewLinkEndpoints(*linkUsecase)
 
-	http.HandleFunc("/link/get", linkEndpoints.GetLink)
-	http.HandleFunc("/link/getpaged", linkEndpoints.GetPagedLinks)
-	http.HandleFunc("/link", linkEndpoints.CreateLink)
+	http.HandleFunc("/api/li/get", linkEndpoints.GetLink)
+	http.HandleFunc("/api/li/getpaged", linkEndpoints.GetPagedLinks)
+	http.HandleFunc("/api/li", linkEndpoints.CreateLink)
 	http.HandleFunc("/swagger/", httpSwagger.WrapHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
