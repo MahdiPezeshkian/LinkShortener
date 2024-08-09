@@ -13,3 +13,7 @@ func NewLinkUseCase(linkRepo domain.LinkRepository) *LinkUsecase {
 func (u *LinkUsecase) GetLinkByID(id string) (*domain.Link, error) {
 	return u.linkRepo.FindByID(id)
 }
+
+func (u *LinkUsecase) SaveLink(link *domain.Link) error {
+	return u.linkRepo.Insert(link)
+}

@@ -1,0 +1,14 @@
+@baseUrl = http://127.0.0.1:8080/
+
+POST {{baseUrl}}link HTTP/1.1
+Content-Type: application/json
+
+{
+  "original_url": "https://example.com",
+  "short_url": "exmpl"
+}
+
+
+###
+
+GET {{baseUrl}}link/get?id=ff9da6b3-1b0b-432f-bb72-5761165a2e0d HTTP/1.1

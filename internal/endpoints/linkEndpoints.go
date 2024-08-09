@@ -3,7 +3,9 @@ package endpoints
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
+	domain "github.com/MahdiPezeshkian/LinkShortener/internal/domain/Link"
 	"github.com/MahdiPezeshkian/LinkShortener/internal/usecases"
 )
 
@@ -15,44 +17,78 @@ func NewLinkEndpoints(usecase usecases.LinkUsecase) *LinkEndpoints {
 	return &LinkEndpoints{usecase: usecase}
 }
 
-// GetUser godoc
-// @Summary Get user by ID
-// @Description Retrieve a user by their ID
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param id query string true "User ID"
-// @Success 200 {object} UserResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Router /user [get]
-func (c *LinkEndpoints) GetUser(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
+func (c *LinkEndpoints) CreateLink(w http.ResponseWriter, r *http.Request) {
+	var input domain.LinkOutputDto
 
-	http.Error(w, "Invalid user ID", http.StatusBadRequest)
-	user, err := c.usecase.GetLinkByID(id)
-	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+
+	// خواندن و اعتبارسنجی ورودی
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
 	}
 
-	json.NewEncoder(w).Encode(user)
+	// بررسی اینکه URLهای ورودی معتبر باشند
+	if input.OriginalURL == "" || input.ShortURL == "" {
+		http.Error(w, "Original URL and Short URL are required", http.StatusBadRequest)
+		return
+	}
+
+	// ایجاد یک انتیتی جدید از مدل Link
+	link := domain.NewLink(input.OriginalURL, input.ShortURL, time.Now().AddDate(0, 1, 0)) // فرض بر این است که Expiration یک ماه بعد است.
+
+	// ذخیره لینک در دیتابیس یا هر ذخیره‌سازی مورد نیاز
+	if err := c.usecase.SaveLink(link); err != nil {
+		http.Error(w, "Failed to save link", http.StatusInternalServerError)
+		return
+	}
+
+	// آماده‌سازی و برگرداندن خروجی
+	output := domain.LinkOutputDto{
+		Id:          link.Id,
+		Isdeleted:   link.Isdeleted,
+		IsVisibled:  link.IsVisibled,
+		OriginalURL: link.OriginalURL,
+		ShortURL:    link.ShortURL,
+		CreatedAt:   link.CreatedAt,
+		ModifiedAt:  link.ModifiedAt,
+		Expiration:  link.Expiration,
+		Clicks:      link.Clicks,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(output); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
-// UserResponse represents the structure of the response for a user
-type UserResponse struct {
-	ID          string `json:"id"`
-	IsDeleted   bool   `json:"is_deleted"`
-	IsVisible   bool   `json:"is_visible"`
-	OriginalURL string `json:"original_url"`
-	ShortURL    string `json:"short_url"`
-	CreatedAt   string `json:"created_at"`
-	ModifiedAt  string `json:"modified_at"`
-	Expiration  string `json:"expiration"`
-	Clicks      int    `json:"clicks"`
-}
+func (c *LinkEndpoints) GetLink(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
 
-// ErrorResponse represents the structure of error responses
-type ErrorResponse struct {
-	Message string `json:"message"`
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+
+	link, err := c.usecase.GetLinkByID(id)
+	if err != nil {
+		http.Error(w, "Link not found", http.StatusNotFound)
+		return
+	}
+
+	output := domain.LinkOutputDto{
+		Id:          link.Id,
+		Isdeleted:   link.Isdeleted,
+		IsVisibled:  link.IsVisibled,
+		OriginalURL: link.OriginalURL,
+		ShortURL:    link.ShortURL,
+		CreatedAt:   link.CreatedAt,
+		ModifiedAt:  link.ModifiedAt,
+		Expiration:  link.Expiration,
+		Clicks:      link.Clicks,
+	}
+	json.NewEncoder(w).Encode(output)
 }

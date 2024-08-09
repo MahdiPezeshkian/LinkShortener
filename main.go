@@ -5,11 +5,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/swaggo/http-swagger"
 	"github.com/MahdiPezeshkian/LinkShortener/internal/endpoints"
 	"github.com/MahdiPezeshkian/LinkShortener/internal/repositories"
 	"github.com/MahdiPezeshkian/LinkShortener/internal/usecases"
 	_ "github.com/mattn/go-sqlite3"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func main() {
@@ -23,11 +23,11 @@ func main() {
 
 	linkRepo := repositories.SQLiteLinkRepository(db)
 	linkUsecase := usecases.NewLinkUseCase(linkRepo)
-	userController := endpoints.NewLinkEndpoints(*linkUsecase)
+	linkEndpoints := endpoints.NewLinkEndpoints(*linkUsecase)
 
-	http.HandleFunc("/user", userController.GetUser)
+	http.HandleFunc("/link/get", linkEndpoints.GetLink)
+	http.HandleFunc("/link", linkEndpoints.CreateLink)
 	http.HandleFunc("/swagger/", httpSwagger.WrapHandler)
-
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
