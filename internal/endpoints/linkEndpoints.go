@@ -7,6 +7,7 @@ import (
 
 	domain "github.com/MahdiPezeshkian/LinkShortener/internal/domain/Link"
 	"github.com/MahdiPezeshkian/LinkShortener/internal/usecases"
+	"github.com/MahdiPezeshkian/LinkShortener/pkg"
 )
 
 type LinkEndpoints struct {
@@ -19,34 +20,55 @@ func NewLinkEndpoints(usecase usecases.LinkUsecase) *LinkEndpoints {
 
 func (c *LinkEndpoints) CreateLink(w http.ResponseWriter, r *http.Request) {
 	var input domain.LinkOutputDto
+	w.Header().Set("Content-Type", "application/json")
 
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		errResponse := pkg.SetRestApiError[domain.LinkOutputDto](http.StatusMethodNotAllowed, "Method not allowed")
+		w.WriteHeader(http.StatusMethodNotAllowed)
+
+		if err := json.NewEncoder(w).Encode(errResponse); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
+		return
 	}
 
-	// خواندن و اعتبارسنجی ورودی
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		http.Error(w, "Invalid input", http.StatusBadRequest)
+		errResponse := pkg.SetRestApiError[domain.LinkOutputDto](http.StatusBadRequest, "Invalid input")
+		w.WriteHeader(http.StatusBadRequest)
+
+		if err := json.NewEncoder(w).Encode(errResponse); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 
-	// بررسی اینکه URLهای ورودی معتبر باشند
 	if input.OriginalURL == "" || input.ShortURL == "" {
-		http.Error(w, "Original URL and Short URL are required", http.StatusBadRequest)
+		errResponse := pkg.SetRestApiError[domain.LinkOutputDto](http.StatusBadRequest, "Original URL and Short URL are required")
+		w.WriteHeader(http.StatusBadRequest)
+
+		if err := json.NewEncoder(w).Encode(errResponse); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 
-	// ایجاد یک انتیتی جدید از مدل Link
-	link := domain.NewLink(input.OriginalURL, input.ShortURL, time.Now().AddDate(0, 1, 0)) // فرض بر این است که Expiration یک ماه بعد است.
+	link := domain.NewLink(input.OriginalURL, input.ShortURL, time.Now().AddDate(0, 1, 0))
 
-	// ذخیره لینک در دیتابیس یا هر ذخیره‌سازی مورد نیاز
 	if err := c.usecase.SaveLink(link); err != nil {
-		http.Error(w, "Failed to save link", http.StatusInternalServerError)
+		errResponse := pkg.SetRestApiError[domain.LinkOutputDto](http.StatusInternalServerError, "Failed to save link")
+		w.WriteHeader(http.StatusInternalServerError)
+
+		if err := json.NewEncoder(w).Encode(errResponse); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 
-	// آماده‌سازی و برگرداندن خروجی
-	output := domain.LinkOutputDto{
+	dto := domain.LinkOutputDto{
 		Id:          link.Id,
 		Isdeleted:   link.Isdeleted,
 		IsVisibled:  link.IsVisibled,
@@ -58,10 +80,18 @@ func (c *LinkEndpoints) CreateLink(w http.ResponseWriter, r *http.Request) {
 		Clicks:      link.Clicks,
 	}
 
+	output := pkg.NewRestApiResponse(&dto, http.StatusCreated, "done")
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(output); err != nil {
-		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		errResponse := pkg.SetRestApiError[domain.LinkOutputDto](http.StatusInternalServerError, "Failed to encode response")
+		w.WriteHeader(http.StatusInternalServerError)
+
+		if err := json.NewEncoder(w).Encode(errResponse); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 }
@@ -70,16 +100,29 @@ func (c *LinkEndpoints) GetLink(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 
 	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		errResponse := pkg.SetRestApiError[domain.LinkOutputDto](http.StatusMethodNotAllowed, "Method not allowed")
+		w.WriteHeader(http.StatusMethodNotAllowed)
+
+		if err := json.NewEncoder(w).Encode(errResponse); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
+		return
 	}
 
 	link, err := c.usecase.GetLinkByID(id)
 	if err != nil {
-		http.Error(w, "Link not found", http.StatusNotFound)
+		errResponse := pkg.SetRestApiError[domain.LinkOutputDto](http.StatusNotFound, "Not found")
+		w.WriteHeader(http.StatusNotFound)
+
+		if err := json.NewEncoder(w).Encode(errResponse); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 
-	output := domain.LinkOutputDto{
+	dto := domain.LinkOutputDto{
 		Id:          link.Id,
 		Isdeleted:   link.Isdeleted,
 		IsVisibled:  link.IsVisibled,
@@ -90,5 +133,7 @@ func (c *LinkEndpoints) GetLink(w http.ResponseWriter, r *http.Request) {
 		Expiration:  link.Expiration,
 		Clicks:      link.Clicks,
 	}
+	output := pkg.NewRestApiResponse(&dto, 200, "done")
+
 	json.NewEncoder(w).Encode(output)
 }
