@@ -22,7 +22,7 @@ func (c *LinkEndpoints) GetLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	link, err := c.usecase.GetLinkByID(id)
+	linkDto, err := c.usecase.GetLinkByID(id)
 	if err != nil {
 		errResponse := pkg.SetRestApiError[domain.LinkOutputDto](http.StatusNotFound, "Not found")
 		w.WriteHeader(http.StatusNotFound)
@@ -34,18 +34,7 @@ func (c *LinkEndpoints) GetLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dto := domain.LinkOutputDto{
-		Id:          link.Id,
-		Isdeleted:   link.Isdeleted,
-		IsVisibled:  link.IsVisibled,
-		OriginalURL: link.OriginalURL,
-		ShortURL:    link.ShortURL,
-		CreatedAt:   link.CreatedAt,
-		ModifiedAt:  link.ModifiedAt,
-		Expiration:  link.Expiration,
-		Clicks:      link.Clicks,
-	}
-	output := pkg.NewRestApiResponse(&dto, 200, "done")
+	output := pkg.NewRestApiResponse(&linkDto, 200, "done")
 
 	json.NewEncoder(w).Encode(output)
 }
