@@ -58,6 +58,28 @@ func (r *sqliteLinkRepository) FindByID(id string) (*domain.Link, error) {
 	return link, nil
 }
 
+func (r *sqliteLinkRepository) FindOneByCondition(condition string, args ...interface{}) (*domain.Link, error) {
+	query := `
+        SELECT id, is_deleted, is_visibled, original_url, short_url, created_at, modified_at, expiration, clicks
+        FROM links WHERE ` + condition + ` LIMIT 1`
+
+	row := r.db.QueryRow(query, args...)
+
+	link := &domain.Link{}
+	err := row.Scan(
+		&link.Id, &link.Isdeleted, &link.IsVisibled, &link.OriginalURL, &link.ShortURL,
+		&link.CreatedAt, &link.ModifiedAt, &link.Expiration, &link.Clicks,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return link, nil
+}
+
 func (r *sqliteLinkRepository) FindAll() ([]*domain.Link, error) {
 	rows, err := r.db.Query(`
         SELECT id, is_deleted, is_visibled, original_url, short_url, created_at, modified_at, expiration, clicks
