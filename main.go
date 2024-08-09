@@ -26,6 +26,7 @@ func main() {
 	linkEndpoints := endpoints.NewLinkEndpoints(*linkUsecase)
 
 	http.HandleFunc("/link/get", linkEndpoints.GetLink)
+	http.HandleFunc("/link/getpaged", linkEndpoints.GetPagedLinks)
 	http.HandleFunc("/link", linkEndpoints.CreateLink)
 	http.HandleFunc("/swagger/", httpSwagger.WrapHandler)
 

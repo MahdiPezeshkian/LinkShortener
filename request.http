@@ -12,3 +12,7 @@ Content-Type: application/json
 ###
 
 GET {{baseUrl}}link/get?id=ff9da6b3-1b0b-432f-bb72-5761165a2e0d HTTP/1.1
+
+###
+
+GET {{baseUrl}}link/getpaged?page_number=3&page_size=3 HTTP/1.1
