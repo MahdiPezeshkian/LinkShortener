@@ -3,6 +3,7 @@ package domain
 import (
 	"time"
 
+	"github.com/MahdiPezeshkian/LinkShortener/pkg"
 	"github.com/google/uuid"
 )
 
@@ -18,13 +19,13 @@ type Link struct {
 	Clicks      int       `json:"clicks"`
 }
 
-func NewLink(originalURL, shortURL string, expiration time.Time) *Link {
+func NewLink(originalURL string, expiration time.Time) *Link {
 	return &Link{
 		Id:          uuid.NewString(),
 		Isdeleted:   false,
 		IsVisibled:  true,
 		OriginalURL: originalURL,
-		ShortURL:    shortURL,
+		ShortURL:    pkg.RandomString(4, 8),
 		CreatedAt:   time.Now(),
 		Expiration:  expiration,
 		Clicks:      0,

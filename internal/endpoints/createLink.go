@@ -10,7 +10,7 @@ import (
 )
 
 func (c *LinkEndpoints) CreateLink(w http.ResponseWriter, r *http.Request) {
-	var input domain.LinkOutputDto
+	var input domain.LinkInputDto
 	w.Header().Set("Content-Type", "application/json")
 
 	if r.Method != http.MethodPost {
@@ -35,7 +35,7 @@ func (c *LinkEndpoints) CreateLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if input.OriginalURL == "" || input.ShortURL == "" {
+	if input.OriginalURL == "" {
 		errResponse := pkg.SetRestApiError[domain.LinkOutputDto](http.StatusBadRequest, "Original URL and Short URL are required")
 		w.WriteHeader(http.StatusBadRequest)
 
@@ -46,7 +46,7 @@ func (c *LinkEndpoints) CreateLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	link := domain.NewLink(input.OriginalURL, input.ShortURL, time.Now().AddDate(0, 1, 0))
+	link := domain.NewLink(input.OriginalURL,  time.Now().AddDate(0, 1, 0))
 
 	if err := c.usecase.SaveLink(link); err != nil {
 		errResponse := pkg.SetRestApiError[domain.LinkOutputDto](http.StatusInternalServerError, "Failed to save link")
