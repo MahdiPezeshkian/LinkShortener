@@ -1,7 +1,8 @@
 @baseUrl = http://127.0.0.1:8080/api/
 
- http://127.0.0.1:8080/l/abc123
- http://127.0.0.1:8080/l/xyz789
+# open links in browser
+http://127.0.0.1:8080/l/abc123
+http://127.0.0.1:8080/l/xyz789
 
 ###
 POST {{baseUrl}}li HTTP/1.1
@@ -12,7 +13,7 @@ Content-Type: application/json
 }
 
 ###
-GET {{baseUrl}}li/get?id=57a0a8b5-663a-44ae-8bee-6089f3c69abf HTTP/1.1
+GET {{baseUrl}}li/get/77811303-ef47-484b-aa04-e08b3dd154e9 HTTP/1.1
 
 ###
 GET {{baseUrl}}li/getpaged?page_number=0&page_size=3 HTTP/1.1

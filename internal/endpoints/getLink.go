@@ -9,7 +9,7 @@ import (
 )
 
 func (c *LinkEndpoints) GetLink(ctx *gin.Context) {
-	id := ctx.Query("id")
+	id := ctx.Param("id")
 
 	linkDto, err := c.usecase.GetLinkByID(id)
 	if err != nil {
