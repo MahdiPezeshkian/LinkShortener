@@ -10,9 +10,12 @@ import (
 )
 
 func SeedData(db *sql.DB) error {
-	query := `
-    INSERT INTO links (id, is_deleted, is_visibled, original_url, short_url, created_at, modified_at, expiration, clicks)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`
+	insertQuery := `
+		INSERT INTO links (id, is_deleted, is_visibled, original_url, short_url, created_at, modified_at, expiration, clicks)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`
+
+	checkQuery := `
+		SELECT COUNT(*) FROM links WHERE original_url = ? OR short_url = ?;`
 
 	links := []domain.Link{
 		{
@@ -40,9 +43,17 @@ func SeedData(db *sql.DB) error {
 	}
 
 	for _, link := range links {
-		_, err := db.Exec(query, link.Id, link.Isdeleted, link.IsVisibled, link.OriginalURL, link.ShortURL, link.CreatedAt, link.ModifiedAt, link.Expiration, link.Clicks)
+		var count int
+		err := db.QueryRow(checkQuery, link.OriginalURL, link.ShortURL).Scan(&count)
 		if err != nil {
-			return errors.New("failed to seed data: " + err.Error())
+			return errors.New("failed to check existing data: " + err.Error())
+		}
+
+		if count == 0 {
+			_, err := db.Exec(insertQuery, link.Id, link.Isdeleted, link.IsVisibled, link.OriginalURL, link.ShortURL, link.CreatedAt, link.ModifiedAt, link.Expiration, link.Clicks)
+			if err != nil {
+				return errors.New("failed to seed data: " + err.Error())
+			}
 		}
 	}
 
