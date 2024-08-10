@@ -1,40 +1,23 @@
 package endpoints
 
 import (
-	"encoding/json"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	domain "github.com/MahdiPezeshkian/LinkShortener/internal/domain/Link"
 	"github.com/MahdiPezeshkian/LinkShortener/pkg"
 )
 
-func (c *LinkEndpoints) GetLink(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
-
-	if r.Method != http.MethodGet {
-		errResponse := pkg.SetRestApiError[domain.LinkOutputDto](http.StatusMethodNotAllowed, "Method not allowed")
-		w.WriteHeader(http.StatusMethodNotAllowed)
-
-		if err := json.NewEncoder(w).Encode(errResponse); err != nil {
-			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-			return
-		}
-		return
-	}
+func (c *LinkEndpoints) GetLink(ctx *gin.Context) {
+	id := ctx.Query("id")
 
 	linkDto, err := c.usecase.GetLinkByID(id)
 	if err != nil {
 		errResponse := pkg.SetRestApiError[domain.LinkOutputDto](http.StatusNotFound, "Not found")
-		w.WriteHeader(http.StatusNotFound)
-
-		if err := json.NewEncoder(w).Encode(errResponse); err != nil {
-			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-			return
-		}
+		ctx.JSON(http.StatusNotFound, errResponse)
 		return
 	}
 
-	output := pkg.NewRestApiResponse(&linkDto, 200, "done")
-
-	json.NewEncoder(w).Encode(output)
+	output := pkg.NewRestApiResponse(&linkDto, http.StatusOK, "done")
+	ctx.JSON(http.StatusOK, output)
 }
