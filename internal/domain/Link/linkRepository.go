@@ -6,6 +6,7 @@ type LinkRepository interface {
 	Insert(user *Link) error
 	FindByID(id string) (*Link, error)
 	FindOneByCondition(condition string, args ...interface{}) (*Link, error)
+	FindManyByCondition(condition string, args ...interface{}) ([]*Link, error)
 	FindAll() ([]*Link, error)
 	Delete(id string) error
 	Update(link *Link) error

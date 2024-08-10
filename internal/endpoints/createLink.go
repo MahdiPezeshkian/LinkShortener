@@ -2,7 +2,6 @@ package endpoints
 
 import (
 	"net/http"
-	"time"
 
 	domain "github.com/MahdiPezeshkian/LinkShortener/internal/domain/Link"
 	"github.com/MahdiPezeshkian/LinkShortener/pkg"
@@ -22,23 +21,10 @@ func (c *LinkEndpoints) CreateLink(ctx *gin.Context) {
 		return
 	}
 
-	link := domain.NewLink(input.OriginalURL, time.Now().AddDate(0, 1, 0))
-
-	if err := c.usecase.SaveLink(link); err != nil {
-		ctx.JSON(http.StatusInternalServerError, pkg.SetRestApiError[domain.LinkOutputDto](http.StatusInternalServerError, "Failed to save link"))
+	dto, err := c.usecase.SaveLink(&input)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, pkg.SetRestApiError[domain.LinkOutputDto](http.StatusConflict, err.Error()))
 		return
-	}
-
-	dto := domain.LinkOutputDto{
-		Id:          link.Id,
-		Isdeleted:   link.Isdeleted,
-		IsVisibled:  link.IsVisibled,
-		OriginalURL: link.OriginalURL,
-		ShortURL:    link.ShortURL,
-		CreatedAt:   link.CreatedAt,
-		ModifiedAt:  link.ModifiedAt,
-		Expiration:  link.Expiration,
-		Clicks:      link.Clicks,
 	}
 
 	output := pkg.NewRestApiResponse(&dto, http.StatusCreated, "done")
