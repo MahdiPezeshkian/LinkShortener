@@ -5,11 +5,13 @@ import (
 	"github.com/MahdiPezeshkian/LinkShortener/pkg"
 )
 
-func (u *LinkUsecase) GetPagedLinkByID(pf *pkg.PaginationRequest) ([]*domain.LinkOutputDto, int, error) {
+func (u *LinkUsecase) GetPagedLinkByID(pf *pkg.PaginationRequest) (data []*domain.LinkOutputDto, totalCount int, err error) {
 
-	links, tCount, err := u.linkRepo.GetPaged(pf)
+	links, totalCount, err := u.linkRepo.GetPaged(pf)
+	if err != nil {
+		return nil, 0, err
+	}
 
-	var dtos []*domain.LinkOutputDto
 	for _, link := range links {
 		dto := &domain.LinkOutputDto{
 			Id:          link.Id,
@@ -22,7 +24,7 @@ func (u *LinkUsecase) GetPagedLinkByID(pf *pkg.PaginationRequest) ([]*domain.Lin
 			Expiration:  link.Expiration,
 			Clicks:      link.Clicks,
 		}
-		dtos = append(dtos, dto)
+		data = append(data, dto)
 	}
-	return dtos, tCount, err
+	return
 }

@@ -1,17 +1,28 @@
 package usecases
 
-import domain "github.com/MahdiPezeshkian/LinkShortener/internal/domain/Link"
+import (
+	"errors"
+
+	domain "github.com/MahdiPezeshkian/LinkShortener/internal/domain/Link"
+)
 
 func (u *LinkUsecase) GetByShortLink(sh string) (*domain.LinkOutputDto, error) {
 
 	link, err := u.linkRepo.FindOneByCondition("short_url = ?", sh)
-
 	if err != nil {
 		return nil, err
 	}
 
+	if link == nil {
+		return nil, errors.New("link not found")
+	}
+
 	link.Click()
-	u.linkRepo.Update(link)
+
+	err = u.linkRepo.Update(link)
+	if err != nil {
+		return nil, err
+	}
 
 	dto := domain.LinkOutputDto{
 		Id:          link.Id,

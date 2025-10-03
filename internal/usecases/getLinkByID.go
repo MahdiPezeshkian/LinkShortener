@@ -1,15 +1,22 @@
 package usecases
 
-import domain "github.com/MahdiPezeshkian/LinkShortener/internal/domain/Link"
+import (
+	"errors"
+
+	domain "github.com/MahdiPezeshkian/LinkShortener/internal/domain/Link"
+)
 
 func (u *LinkUsecase) GetLinkByID(id string) (*domain.LinkOutputDto, error) {
 
 	link, err := u.linkRepo.FindByID(id)
-
 	if err != nil {
 		return nil, err
 	}
-	
+
+	if link == nil {
+		return nil, errors.New("link not found")
+	}
+
 	dto := domain.LinkOutputDto{
 		Id:          link.Id,
 		Isdeleted:   link.Isdeleted,

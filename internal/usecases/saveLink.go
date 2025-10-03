@@ -11,7 +11,6 @@ func (u *LinkUsecase) SaveLink(input *domain.LinkInputDto) (domain.LinkOutputDto
 	link := domain.NewLink(input.OriginalURL, time.Now().AddDate(0, 1, 0))
 
 	exist, err := u.linkRepo.FindManyByCondition("short_url = ? or original_url = ?", link.ShortURL, link.OriginalURL)
-
 	if err != nil {
 		return domain.LinkOutputDto{}, err
 	}
@@ -43,7 +42,6 @@ func (u *LinkUsecase) SaveLink(input *domain.LinkInputDto) (domain.LinkOutputDto
 	}
 
 	err = u.linkRepo.Insert(link)
-
 	if err != nil {
 		return domain.LinkOutputDto{}, err
 	}
